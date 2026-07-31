@@ -1,0 +1,35 @@
+generated: '2026-07-20'
+method: probed
+source: dig DNS probe of murmurcars.com (apis.yml Website host); HTTPS unreachable
+note: >-
+  The provider's web hosts do not resolve to a live server. The apex domains
+  murmurcars.com and murmurads.com carry NS records (AWS Route 53) but no A
+  record, and blog.murmurcars.com resolves to 18.209.59.200 but refuses HTTPS
+  connections. TLS/HSTS could not be probed because no host is reachable. Only
+  DNS-level records are recorded below; the operation appears dormant.
+hosts:
+  - host: murmurcars.com
+    https: false
+    reachable: false
+    a_record: false
+    note: apex has NS but no A record; no reachable HTTPS host
+  - host: blog.murmurcars.com
+    https: false
+    reachable: false
+    a_record: true
+    ip: 18.209.59.200
+    note: resolves but connection refused on 443
+domains:
+  - domain: murmurcars.com
+    dnssec: false
+    caa: []
+    spf: false
+    dmarc: false
+    dmarc_policy: null
+    mx: true
+    mx_provider: Google Workspace
+    txt:
+      - google-site-verification=VenwwoNIDt3-D5TjmucHV0We9RcWy8n3z0NhYhfPMmE
+    note: >-
+      Google Workspace mail is still configured (MX present) but no SPF, DMARC,
+      CAA, or DNSSEC records are published.
