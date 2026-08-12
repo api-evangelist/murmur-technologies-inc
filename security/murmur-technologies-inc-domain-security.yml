@@ -1,24 +1,68 @@
-generated: '2026-07-20'
+generated: '2026-08-12'
 method: probed
-source: dig DNS probe of murmurcars.com (apis.yml Website host); HTTPS unreachable
+source: >-
+  dig DNS probe of murmurcars.com and murmurads.com, plus openssl s_client TLS
+  and curl header probe of portal.murmurads.com (the only Murmur host that
+  answers HTTPS).
 note: >-
-  The provider's web hosts do not resolve to a live server. The apex domains
-  murmurcars.com and murmurads.com carry NS records (AWS Route 53) but no A
-  record, and blog.murmurcars.com resolves to 18.209.59.200 but refuses HTTPS
-  connections. TLS/HSTS could not be probed because no host is reachable. Only
-  DNS-level records are recorded below; the operation appears dormant.
+  Supersedes the 2026-07-20 probe, which concluded no host was reachable and so
+  could not test TLS at all. A reachable host has since been found:
+  portal.murmurads.com, the advertiser portal, serves over HTTPS from Amazon S3
+  behind CloudFront with a valid Amazon-issued wildcard certificate for
+  *.murmurads.com. TLS itself is sound (CloudFront default), but the origin
+  publishes NO security response headers — no HSTS, no CSP, no X-Frame-Options.
+  At the DNS layer both apex domains remain dark: neither murmurcars.com nor
+  murmurads.com carries an A record, and neither publishes CAA or DNSSEC.
+  Email posture differs between the two domains and is recorded separately
+  below: murmurads.com publishes SPF and DMARC, murmurcars.com publishes
+  neither. The certificate was reissued 2025-10-07 and Google Workspace MX is
+  live on both domains, so the registrations are still being maintained even
+  though the public web presence is down.
 hosts:
+  - host: portal.murmurads.com
+    https: true
+    reachable: true
+    a_record: true
+    cname: d2yeufc603kica.cloudfront.net
+    tls:
+      valid: true
+      subject: CN=*.murmurads.com
+      issuer: 'C=US, O=Amazon, CN=Amazon RSA 2048 M04'
+      not_before: '2025-10-07'
+      not_after: '2026-11-05'
+      wildcard: true
+    hsts: false
+    csp: false
+    x_frame_options: false
+    server: AmazonS3 via CloudFront
+    note: >-
+      Live static single-page app; index.html last modified 2024-12-26. TLS
+      terminates at CloudFront. No security headers are set on the origin.
+  - host: backendapp.murmurcars.com
+    https: false
+    reachable: false
+    a_record: true
+    ip: 34.222.140.165
+    note: >-
+      The API host the portal's JavaScript bundle calls. Resolves, but TCP 443
+      and 80 are filtered/dead and every request times out. TLS could not be
+      negotiated.
   - host: murmurcars.com
     https: false
     reachable: false
     a_record: false
-    note: apex has NS but no A record; no reachable HTTPS host
+    note: apex has Route 53 NS but no A record; no reachable HTTPS host.
+  - host: murmurads.com
+    https: false
+    reachable: false
+    a_record: false
+    note: apex has Route 53 NS but no A record; no reachable HTTPS host.
   - host: blog.murmurcars.com
     https: false
     reachable: false
     a_record: true
     ip: 18.209.59.200
-    note: resolves but connection refused on 443
+    note: resolves but times out on 443.
 domains:
   - domain: murmurcars.com
     dnssec: false
@@ -28,8 +72,27 @@ domains:
     dmarc_policy: null
     mx: true
     mx_provider: Google Workspace
+    nameservers: AWS Route 53
     txt:
       - google-site-verification=VenwwoNIDt3-D5TjmucHV0We9RcWy8n3z0NhYhfPMmE
     note: >-
       Google Workspace mail is still configured (MX present) but no SPF, DMARC,
-      CAA, or DNSSEC records are published.
+      CAA, or DNSSEC records are published. An unauthenticated sender can spoof
+      this domain.
+  - domain: murmurads.com
+    dnssec: false
+    caa: []
+    spf: true
+    spf_record: 'v=spf1 include:sendersrv.com ?all'
+    spf_policy: neutral
+    dmarc: true
+    dmarc_policy: none
+    dmarc_record: 'v=DMARC1; p=none;'
+    mx: true
+    mx_provider: Google Workspace
+    nameservers: AWS Route 53
+    note: >-
+      Better configured than murmurcars.com but still permissive: the SPF record
+      ends in `?all` (neutral) rather than `-all` or `~all`, and DMARC is set to
+      `p=none`, which monitors without quarantining or rejecting. Neither CAA
+      nor DNSSEC is published.

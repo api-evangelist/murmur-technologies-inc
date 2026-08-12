@@ -1,0 +1,113 @@
+generated: '2026-08-12'
+method: probed
+source: >-
+  Direct HTTP probe of every Murmur host that resolves. Only
+  portal.murmurads.com answered; murmurcars.com and murmurads.com have no A
+  record and could not be probed at all.
+note: >-
+  NO WELL-KNOWN DOCUMENT IS SERVED. portal.murmurads.com is a create-react-app
+  single-page application served as static objects from Amazon S3 behind
+  CloudFront, and its CloudFront default-root-object behavior returns the SAME
+  index.html shell with HTTP 200 and content-type text/html for EVERY unmatched
+  path. Seven of the ten paths below therefore "return 200" while carrying no
+  document whatsoever — each response is byte-identical to the app shell
+  (1,247 bytes, etag 0588ed741191176c55c0296ca8338121). These are recorded as
+  misses, not hits, and NO WellKnown, SecurityTxt, AgentCard or LLMsTxt pointer
+  is emitted in apis.yml. The two paths that returned a real 404
+  (/.well-known/security.txt and /llms.txt) are the only honest negatives the
+  origin produced.
+hosts_probed:
+  - host: portal.murmurads.com
+    reachable: true
+    note: >-
+      Live static SPA (S3 + CloudFront). index.html last modified 2024-12-26;
+      no build has shipped since.
+  - host: murmurcars.com
+    reachable: false
+    note: apex carries Route 53 NS records but no A record; nothing to probe.
+  - host: murmurads.com
+    reachable: false
+    note: apex carries Route 53 NS records but no A record; nothing to probe.
+  - host: backendapp.murmurcars.com
+    reachable: false
+    note: >-
+      Resolves to 34.222.140.165 but TCP 443 and 80 are filtered/dead; every
+      request times out. This is the API host the portal bundle calls.
+paths:
+  - path: /.well-known/security.txt
+    host: portal.murmurads.com
+    status: 404
+    file: null
+    hit: false
+  - path: /.well-known/openid-configuration
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not a document.
+  - path: /.well-known/oauth-authorization-server
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not a document.
+  - path: /.well-known/api-catalog
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not a document.
+  - path: /.well-known/ai-plugin.json
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not a document.
+  - path: /.well-known/agent-card.json
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: >-
+      SPA shell, not an AgentCard. Body does not parse as JSON and carries none
+      of name/url/version/protocolVersion/capabilities/skills. No AgentCard
+      pointer emitted.
+  - path: /.well-known/agent.json
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not an AgentCard (legacy pre-0.3 path). No pointer emitted.
+  - path: /llms.txt
+    host: portal.murmurads.com
+    status: 404
+    file: null
+    hit: false
+  - path: /openapi.json
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: SPA shell, not an OpenAPI document.
+  - path: /manifest.json
+    host: portal.murmurads.com
+    status: 200
+    content_type: text/html
+    file: null
+    hit: false
+    note: >-
+      SPA shell rather than the PWA manifest the index.html links to; the
+      referenced manifest is not actually served.
+summary:
+  paths_probed: 10
+  real_documents: 0
+  hard_404: 2
+  spa_shell_200: 8
+  pointers_emitted: 0

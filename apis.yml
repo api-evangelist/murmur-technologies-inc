@@ -20,10 +20,17 @@ description: >-
   audiences by demographics, location, and behavior, measure ad performance in real
   time, and retarget viewers across other channels such as Facebook and Google. The
   company was surfaced as a portfolio company of 500 Global and added to the API
-  Evangelist network as a lead for enrichment. As of this enrichment pass its public
-  web hosts (murmurcars.com / murmurads.com) do not resolve to a live web server and
-  the operation appears dormant; it exposes no public API, developer portal, SDKs,
-  or documentation.
+  Evangelist network as a lead for enrichment. As of the 2026-08-12 enrichment pass
+  the operation appears dormant: both marketing domains (murmurcars.com and
+  murmurads.com) carry Route 53 nameservers but no A record at all, and the blog host
+  times out. The one surviving surface is portal.murmurads.com, the advertiser portal,
+  a static React single-page app served from Amazon S3 behind CloudFront whose last
+  build shipped 2024-12-26. Its JavaScript bundle calls a private REST backend at
+  backendapp.murmurcars.com/api/v1/ (campaigns, venues, zipcode demographics, GPS,
+  air quality and user endpoints), but that host — while it still resolves — has TCP
+  443 and 80 dead, so the portal front-end can no longer reach its own API. Murmur
+  publishes no public API, developer portal, documentation, SDK, or machine-readable
+  specification of any kind, and no package exists for it in any public registry.
 url: https://raw.githubusercontent.com/api-evangelist/murmur-technologies-inc/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -33,7 +40,7 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-20'
+modified: '2026-08-12'
 tags:
 - Company
 - Advertising
@@ -54,7 +61,30 @@ common:
 - type: DomainSecurity
   url: security/murmur-technologies-inc-domain-security.yml
 x-enrichment:
-  date: '2026-07-20'
+  date: '2026-08-12'
   status: minimal
   artifacts_added: 1
   pass: local-v1
+x-coverage:
+  state: none
+  reason: defunct
+  detail: >-
+    Both Murmur marketing domains resolve to Route 53 nameservers with no A record
+    whatsoever, and the private REST backend the advertiser portal calls
+    (backendapp.murmurcars.com) still resolves but has TCP 443 and 80 dead — the only
+    surface left standing is a static React portal shell on S3/CloudFront whose last
+    build shipped 2024-12-26 and which can no longer reach its own API.
+  evidence:
+    - url: https://murmurcars.com
+      status: 0
+    - url: https://murmurads.com
+      status: 0
+    - url: https://backendapp.murmurcars.com/api/v1/zipcode/get-us-information
+      status: 0
+    - url: https://portal.murmurads.com/
+      status: 200
+    - url: https://portal.murmurads.com/.well-known/security.txt
+      status: 404
+    - url: https://portal.murmurads.com/llms.txt
+      status: 404
+  checked: '2026-08-12'
